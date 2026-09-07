@@ -1,14 +1,16 @@
 # SYNAPSE
 
-> **The operating console for fabius, one AI agent wired to six model providers, for the person who must watch it spend money and be able to stop it.**
+> **An agent operations console with inspectable model routing, a system graph, chat and background-task controls.**
 
-**Live:** [synapse-vert-one.vercel.app](https://synapse-vert-one.vercel.app)
+**Demo:** [synapse-vert-one.vercel.app](https://synapse-vert-one.vercel.app)
+
+**Current status — September 2026:** the public frontend exposes a bundled read-only demo. The operational D1 database was intentionally retired on September 4; persisted graphs, tasks, events, approvals and related backend state are unavailable until the database is restored and rebound. The architecture below describes the implementation, not a currently available managed service. Synapse is a separate application from the Fabius plugin.
 
 <p align="center">
   <img src="assets/preview.webp" alt="synapse — the live site" width="100%">
 </p>
 
-On site it is fabius; the served `<title>` reads *"fabius — scout wide · strike narrow · one agent, every model, one stance."* Nine tabs (Graph, Skills, System, Router, Chat, Missions, Memory, Operator, Dashboard) sit over a force-directed canvas of the agent's own architecture. No build step: `index.html` loads 21 global-IIFE scripts plus pinned `force-graph@1.43.5` and `gsap@3.12.5`. No module imports another: `js/store.js` is the sole API client and sole writer of `window.ORG`, and the rest talk over a `CustomEvent` bus. The backend is one Cloudflare Worker, `worker/src/index.js`, 4,882 lines in one file, over D1, Vectorize and Workers AI.
+On site it is fabius; the served `<title>` reads *"fabius — scout wide · strike narrow · one agent, every model, one stance."* Nine tabs (Graph, Skills, System, Router, Chat, Missions, Memory, Operator, Dashboard) sit over a force-directed canvas of the agent's own architecture. No build step: `index.html` loads 21 global-IIFE scripts plus pinned `force-graph@1.43.5` and `gsap@3.12.5`. No module imports another: `js/store.js` is the sole API client and sole writer of `window.ORG`, and the rest talk over a `CustomEvent` bus. The backend implementation is a Cloudflare Worker, `worker/src/index.js`, with D1, Vectorize and Workers AI integrations.
 
 ## Routing each task to the cheapest tier that still holds
 
@@ -28,11 +30,11 @@ Without a provider key the Worker simulates the loop and says so: verdicts are t
 
 Two gotchas are worth carrying forward. First, workerd type-checks every named export as a handler-map entry, so a bare exported number or string crashes the isolate on boot; `wrangler dev` caught it locally before it ever shipped — `node --test` cannot — and primitives now ride inside `OP_TUNING`. Second, a `401` on `/api/*` never proves a route exists: the auth gate returns before the router.
 
-## Verifying against the live URL, not just the laptop
+## Verification record
 
 - **195/195 Worker unit tests** across 11 test files (`node --test worker/test/*.test.js`), re-run 2026-08-31.
 - Release sweep, 2026-07-30: Chromium over all nine views at desktop and mobile, a 320px to 1920px width sweep including the 1660/1661px navigation breakpoint, WebKit on four of them.
-- Re-run against the deployed alias: the served HTML and the changed CSS/JavaScript byte-identical to the local commit.
+- **2026-09-07 documentation check:** the live HTML matched the current source. Chromium displayed the read-only demo without page errors. Authenticated endpoints returned 401, as did a nonexistent control route; those responses do not prove backend readiness. Earlier release checks above predate the database retirement.
 
 ## Screenshots
 
